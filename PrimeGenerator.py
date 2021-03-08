@@ -1,20 +1,32 @@
-# Homework Number: 06
-# Name: Ziro Petro
-# ECN Login: petrop
-# Due Date: March 09 2020
-# Python Interpreter: Python 3.8
 
-#globals
-e = 65537
+##  PrimeGenerator.py
+##  Author: Avi Kak
+##  Date: February 18, 2011
+##  Modified Date:  February 28, 2016
 
-from BitVector import *
+##  Call syntax:
+##
+##        PrimeGenerator.py  width_desired_for_bit_field_for_prime
+##
+##  For example, if you call
+##
+##        PrimeGenerator.py 32
+##
+##  you may get a prime that looks like 3262037833.  On the other hand, if you
+##  call
+##
+##        PrimeGenerator.py 128
+##
+##  you may get a prime that looks like 338816507393364952656338247029475569761
+##
+##  IMPORTANT:  The two most significant are explicitly set for the prime that is
+##              returned.
+
 import sys
 import random
 
 
-##  PrimeGenerator function
-##  Author: Avi Kak
-##  Date used: 7 MAR 2021
+############################  class PrimeGenerator  ##############################
 class PrimeGenerator(object):  # (A1)
 
     def __init__(self, **kwargs):  # (A2)
@@ -88,72 +100,13 @@ class PrimeGenerator(object):  # (A1)
                     print("    candidate is: %d" % self.candidate)  # (E21)
         return self.candidate  # (E22)
 
-def RSAencrypt(filename):
-    bv = BitVector(filename=messagetxt)
 
-    while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file(64)
-        if bitvec.length() > 0:
-            for j in range(0, 16):
-                if bitvec.length() != 64:
-                    # print("a")
-                    # print("bvl:",bitvec.length())
-                    for i in range(64 - (bitvec.length()) % 64):
-                        # print("w")
-                        bitvec.pad_from_right(1)
-                    # print(bitvec)
-
-def inputtobv(key_file):
-    #file reading
-    kptr = open(key_file,"r")
-    key = kptr.readline()
-    key = key.strip()
-
-def writeinttofile(filename, sendint):
-    fptr = open(filename, "w")
-    fptr.write(str(sendint))
-    fptr.close()
-
-# Press the green button in the gutter to run the script.
+####################################  main  ######################################
 if __name__ == '__main__':
-    if (sys.argv[1] == "-g"):
-        print("beginning key generation!")
-        num_of_bits_desired = 128
-        for i in range(2):
-            generator = PrimeGenerator(bits=num_of_bits_desired)
-            prime = generator.findPrime()
-            print("Prime returned: %d" % prime)
-            writeinttofile(sys.argv[i+2],prime)
 
-
-    messagetxt = sys.argv[2]
-    keytxt = sys.argv[3]
-    print(sys.argv[1],sys.argv[2],sys.argv[3])
-    print("reading file!")
-    #RSAencrypt(filename)
-    #message = inputtobv()
-
-    print("beginning encryption!!")
-
-
-
-#pow(base,exp,mod)
-#c= pow(m,e,n)
-#RSA KEYGEN:
-#plaintext padded with 128 bits to the left
-'''
-1) generate primes p,q
-2) n=pq
-3) o(n)= (p-1)(q-1)
-4) select e such that k<3<o(n) and gcd(o(n),p)=1 
-5) calculate d = e^-1mod(o(n))
-pub key = e,n
-priv key = d,n
-priv exponent = d
-
-
-
-loop through primegen until gcd(p-1,e)=gcd(q-1,e)=1
-primegen ensures first 2 bits are set
-
-'''
+    if len(sys.argv) != 2:  # (M1)
+        sys.exit("Call syntax:  PrimeGenerator.py  width_of_bit_field")  # (M2)
+    num_of_bits_desired = int(sys.argv[1])  # (M3)
+    generator = PrimeGenerator(bits=num_of_bits_desired)  # (M4)
+    prime = generator.findPrime()  # (M5)
+    print("Prime returned: %d" % prime)  # (M6)
