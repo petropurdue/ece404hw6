@@ -10,7 +10,7 @@ e = 65537
 from BitVector import *
 import sys
 import random
-
+import math
 
 ##  PrimeGenerator function
 ##  Author: Avi Kak
@@ -88,20 +88,21 @@ class PrimeGenerator(object):  # (A1)
                     print("    candidate is: %d" % self.candidate)  # (E21)
         return self.candidate  # (E22)
 
-def RSAencrypt(filename):
-    bv = BitVector(filename=messagetxt)
+def encrypt(bitvec,n):
+    return pow(bitvec.int_val(),e,n)
 
+def RSAencrypt(filename,n):
+    bv = BitVector(filename=filename)
     while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file(64)
+        bitvec = bv.read_bits_from_file(128)
         if bitvec.length() > 0:
             for j in range(0, 16):
                 if bitvec.length() != 64:
-                    # print("a")
-                    # print("bvl:",bitvec.length())
                     for i in range(64 - (bitvec.length()) % 64):
-                        # print("w")
                         bitvec.pad_from_right(1)
-                    # print(bitvec)
+        bitvec.pad_from_left(128)
+        #we now have the 256-bit bitvec string. Nice.
+        encrypt(bitvec,n)
 
 def inputtobv(key_file):
     #file reading
@@ -114,22 +115,33 @@ def writeinttofile(filename, sendint):
     fptr.write(str(sendint))
     fptr.close()
 
+def readfileint(filename):
+    ptr = open(filename, "r")
+    readstr = ptr.readline()
+    return int(readstr)
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     if (sys.argv[1] == "-g"):
         print("beginning key generation!")
         num_of_bits_desired = 128
         for i in range(2):
-            generator = PrimeGenerator(bits=num_of_bits_desired)
-            prime = generator.findPrime()
+            prime = 0
+            #print(sys.argv[1], sys.argv[2], sys.argv[3])
+            while (math.gcd(prime,e) != 1):
+                generator = PrimeGenerator(bits=num_of_bits_desired)
+                prime = generator.findPrime()
             print("Prime returned: %d" % prime)
             writeinttofile(sys.argv[i+2],prime)
 
+    if (sys.argv[1] == "-e"):
+        print(sys.argv[1], sys.argv[2], sys.argv[3],sys.argv[4],sys.argv[5])
+        print("encryption time, baby")
+        p = readfileint(sys.argv[3])
+        q = readfileint(sys.argv[4])
+        n = p*q
+        phi = (p-1)*(q-1)
+        RSAencrypt(sys.argv[2],n)
 
-    messagetxt = sys.argv[2]
-    keytxt = sys.argv[3]
-    print(sys.argv[1],sys.argv[2],sys.argv[3])
-    print("reading file!")
     #RSAencrypt(filename)
     #message = inputtobv()
 
@@ -139,13 +151,13 @@ if __name__ == '__main__':
 
 #pow(base,exp,mod)
 #c= pow(m,e,n)
-#RSA KEYGEN:
-#plaintext padded with 128 bits to the left
+#RSA GEN:
+# X plaintext padded with 128 bits to the left
 '''
-1) generate primes p,q
-2) n=pq
-3) o(n)= (p-1)(q-1)
-4) select e such that k<3<o(n) and gcd(o(n),p)=1 
+X) generate primes p,q
+X) n=pq
+X) o(n)= (p-1)(q-1)
+X) select e such that k<3<o(n) and gcd(o(n),p)=1 (confirm this works!!)
 5) calculate d = e^-1mod(o(n))
 pub key = e,n
 priv key = d,n
