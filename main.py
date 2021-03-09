@@ -110,15 +110,19 @@ def RSAencrypt(filename,n):
     return finbitvec
 
 def decrypt(bitvec,n): #appears to be identical to encrypt.... WHY IS THERE A 4-BIT RELATED ERROR WHEN IT'S DOING THE EXACT SAME PROCESS BUT WITHOUT THE FLUFF 128-ZEROS?
-    return BitVector(intVal = pow(bitvec.int_val(),e,n))
+    return BitVector(intVal = pow(bitvec.int_val(),e,n),size=256)
 
 def RSAdecrypt(filename,n):
-
+    finbitvec = BitVector(size=0)
     fptr = open(filename,"r")
-    readline = fptr.readlines()
-    bitvec = BitVector(hexstring = readline)
+    readline = fptr.readline()
+    bitvec = BitVector(hexstring = readline.rstrip())
     #NOW ENCRYPT EVERY 256 bits!!!
-    return bitvec
+    for i in range(0,len(bitvec),256):
+        finbitvec+=(decrypt(bitvec[i:i+256],n))
+        #print(i,i+256)
+    #print("!",len(finbitvec),len(bitvec),"!")
+    return finbitvec
 
 def inputtobv(key_file):
     #file reading
@@ -142,7 +146,15 @@ def writebitvectofile(bitvec,filename):
     fptr.write(hexstring)
     fptr.close()
 
-
+def writebvtoascii(filename, inputvec):
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(inputvec.get_bitvector_in_ascii())
+    '''fptr = open(filename,"w")
+    salad = inputvec.get_bitvector_in_ascii
+    print(salad)
+    fptr.write(inputvec.get_bitvector_in_ascii())
+    fptr.close()
+'''
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     if (sys.argv[1] == "-g"):
@@ -164,8 +176,8 @@ if __name__ == '__main__':
         q = readfileint(sys.argv[4])
         n = p*q
         phi = (p-1)*(q-1)
-        bitvec = RSAencrypt(sys.argv[2],n)
-        writebitvectofile(bitvec,sys.argv[5])
+        bitvec = RSAencrypt(sys.argv[2], n)
+        writebitvectofile(bitvec, sys.argv[5])
 
     if (sys.argv[1] == "-d"):
         print(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
@@ -175,7 +187,7 @@ if __name__ == '__main__':
         n = p*q
         phi = (p-1)*(q-1)
         bitvec = RSAdecrypt(sys.argv[2],n)
-        writebitvectofile(bitvec,sys.argv[5])
+        writebvtoascii(sys.argv[5],bitvec)
 
 
     #RSAencrypt(filename)
