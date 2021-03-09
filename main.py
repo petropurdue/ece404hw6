@@ -118,7 +118,7 @@ def RSAdecrypt(filename,n):
     readline = fptr.readlines()
     bitvec = BitVector(hexstring = readline)
     #NOW ENCRYPT EVERY 256 bits!!!
-    return finbitvec
+    return bitvec
 
 def inputtobv(key_file):
     #file reading
