@@ -110,6 +110,18 @@ def RSAencrypt(filename,n):
         finbitvec += bitvec
     return finbitvec
 
+def decrypt(bitvec,n): #appears to be identical to encrypt.... WHY IS THERE A 4-BIT RELATED ERROR WHEN IT'S DOING THE EXACT SAME PROCESS BUT WITHOUT THE FLUFF 128-ZEROS?
+    return BitVector(intVal = pow(bitvec.int_val(),e,n))
+
+def RSAdecrypt(filename,n):
+    bv = BitVector(filename=filename)
+    finbitvec = BitVector(size = 0)
+    while (bv.more_to_read):
+        bitvec = bv.read_bits_from_file(128)
+        bitvec = decrypt(bitvec, n)
+        finbitvec += bitvec
+    return finbitvec
+
 def inputtobv(key_file):
     #file reading
     kptr = open(key_file,"r")
@@ -155,6 +167,16 @@ if __name__ == '__main__':
         n = p*q
         phi = (p-1)*(q-1)
         bitvec = RSAencrypt(sys.argv[2],n)
+        writebitvectofile(bitvec,sys.argv[5])
+
+    if (sys.argv[1] == "-d"):
+        print(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+        print("decryption time, baby")
+        p = readfileint(sys.argv[3])
+        q = readfileint(sys.argv[4])
+        n = p*q
+        phi = (p-1)*(q-1)
+        bitvec = RSAdecrypt(sys.argv[2],n)
         writebitvectofile(bitvec,sys.argv[5])
 
 
