@@ -89,20 +89,26 @@ class PrimeGenerator(object):  # (A1)
         return self.candidate  # (E22)
 
 def encrypt(bitvec,n):
-    return pow(bitvec.int_val(),e,n)
+    return BitVector(intVal = pow(bitvec.int_val(),e,n))
 
 def RSAencrypt(filename,n):
     bv = BitVector(filename=filename)
+    finbitvec = BitVector(size = 0)
     while (bv.more_to_read):
         bitvec = bv.read_bits_from_file(128)
-        if bitvec.length() > 0:
-            for j in range(0, 16):
-                if bitvec.length() != 64:
-                    for i in range(64 - (bitvec.length()) % 64):
-                        bitvec.pad_from_right(1)
         bitvec.pad_from_left(128)
-        #we now have the 256-bit bitvec string. Nice.
-        encrypt(bitvec,n)
+        bitvec = encrypt(bitvec, n)
+        print("encrypted length is",bitvec.length())
+        if bitvec.length() > 0:
+            if bitvec.length() != 128:
+                fazoodle = 128 - (bitvec.length()) % 128
+                if (fazoodle == 128):
+                    fazoodle = 0
+                bitvec.pad_from_right(fazoodle)
+                print("bitvec has been made to length of ", bitvec.length())
+        #we now have the 256-bit encrypted bitvec string. Nice.
+        finbitvec += bitvec
+    return finbitvec
 
 def inputtobv(key_file):
     #file reading
@@ -119,6 +125,14 @@ def readfileint(filename):
     ptr = open(filename, "r")
     readstr = ptr.readline()
     return int(readstr)
+
+def writebitvectofile(bitvec,filename):
+    fptr = open(filename,"w")
+    hexstring = bitvec.get_bitvector_in_hex()
+    fptr.write(hexstring)
+    fptr.close()
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     if (sys.argv[1] == "-g"):
@@ -140,12 +154,14 @@ if __name__ == '__main__':
         q = readfileint(sys.argv[4])
         n = p*q
         phi = (p-1)*(q-1)
-        RSAencrypt(sys.argv[2],n)
+        bitvec = RSAencrypt(sys.argv[2],n)
+        writebitvectofile(bitvec,sys.argv[5])
+
 
     #RSAencrypt(filename)
     #message = inputtobv()
 
-    print("beginning encryption!!")
+    print("!!")
 
 
 
