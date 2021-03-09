@@ -89,23 +89,22 @@ class PrimeGenerator(object):  # (A1)
         return self.candidate  # (E22)
 
 def encrypt(bitvec,n):
-    return BitVector(intVal = pow(bitvec.int_val(),e,n))
+    return BitVector(intVal = pow(bitvec.int_val(),e,n),size=256)
 
 def RSAencrypt(filename,n):
     bv = BitVector(filename=filename)
     finbitvec = BitVector(size = 0)
     while (bv.more_to_read):
         bitvec = bv.read_bits_from_file(128)
-        bitvec.pad_from_left(128)
-        bitvec = encrypt(bitvec, n)
-        print("encrypted length is",bitvec.length())
         if bitvec.length() > 0:
             if bitvec.length() != 128:
                 fazoodle = 128 - (bitvec.length()) % 128
                 if (fazoodle == 128):
                     fazoodle = 0
                 bitvec.pad_from_right(fazoodle)
-                print("bitvec has been made to length of ", bitvec.length())
+        bitvec.pad_from_left(128)
+        bitvec = encrypt(bitvec, n)
+        #print("encrypted length is",bitvec.length())
         #we now have the 256-bit encrypted bitvec string. Nice.
         finbitvec += bitvec
     return finbitvec
@@ -114,12 +113,11 @@ def decrypt(bitvec,n): #appears to be identical to encrypt.... WHY IS THERE A 4-
     return BitVector(intVal = pow(bitvec.int_val(),e,n))
 
 def RSAdecrypt(filename,n):
-    bv = BitVector(filename=filename)
-    finbitvec = BitVector(size = 0)
-    while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file(128)
-        bitvec = decrypt(bitvec, n)
-        finbitvec += bitvec
+
+    fptr = open(filename,"r")
+    readline = fptr.readlines()
+    bitvec = BitVector(hexstring = readline)
+    #NOW ENCRYPT EVERY 256 bits!!!
     return finbitvec
 
 def inputtobv(key_file):
